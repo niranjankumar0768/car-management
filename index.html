@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🚗 Car Management System</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════ HEADER ═══ -->
+<header class="app-header">
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-icon">🚗</div>
+      <div class="brand-text">
+        <h1>Car Management</h1>
+        <span>Daily Earnings &amp; Expense Tracker</span>
+      </div>
+    </div>
+    <nav class="header-nav">
+      <button id="nav-dashboard" class="nav-btn active" onclick="switchView('dashboard')">📊 <span>Dashboard</span></button>
+      <button id="nav-table"     class="nav-btn"        onclick="switchView('table')">📋 <span>Records</span></button>
+      <button id="nav-summary"   class="nav-btn"        onclick="switchView('summary')">📈 <span>Summary</span></button>
+      <button id="nav-admin"     class="nav-btn"        onclick="switchView('admin')">⚙️ <span>Admin</span></button>
+    </nav>
+  </div>
+</header>
+
+<main class="main-wrapper">
+
+  <!-- ══════════════════════════════════════════════════
+       VIEW: DASHBOARD
+  ══════════════════════════════════════════════════ -->
+  <div id="view-dashboard" class="view active">
+
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-header">
+        <span class="card-title">📅 Monthly Overview</span>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <div class="month-selector">
+            <label style="text-transform:none;font-size:13px;color:var(--gray-600)">Month:</label>
+            <select id="dashMonth" onchange="onDashMonthChange(this.value)"></select>
+          </div>
+          <button class="btn btn-primary" onclick="openAddModal()">➕ Add Entry</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon green">💰</div>
+        <div class="stat-info">
+          <div class="stat-label">Total Fare Earned</div>
+          <div class="stat-value" id="stat-totalFare">₹0</div>
+          <div class="stat-sub">This month</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green">📈</div>
+        <div class="stat-info">
+          <div class="stat-label">Net Profit (Owner)</div>
+          <div class="stat-value" id="stat-netProfit">₹0</div>
+          <div class="stat-sub">After all expenses</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon red">⛽</div>
+        <div class="stat-info">
+          <div class="stat-label">Total Fuel Cost</div>
+          <div class="stat-value" id="stat-totalFuel">₹0</div>
+          <div class="stat-sub">CNG + Petrol</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon yellow">🍔</div>
+        <div class="stat-info">
+          <div class="stat-label">Food Expenses</div>
+          <div class="stat-value" id="stat-foodTotal">₹0</div>
+          <div class="stat-sub">This month</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon purple">🔧</div>
+        <div class="stat-info">
+          <div class="stat-label">Servicing Cost</div>
+          <div class="stat-value" id="stat-servicingTotal">₹0</div>
+          <div class="stat-sub">This month</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon blue">📱</div>
+        <div class="stat-info">
+          <div class="stat-label">UPI Earnings</div>
+          <div class="stat-value" id="stat-upiTotal">₹0</div>
+          <div class="stat-sub">Online payments</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon yellow">💵</div>
+        <div class="stat-info">
+          <div class="stat-label">Cash Earnings</div>
+          <div class="stat-value" id="stat-cashTotal">₹0</div>
+          <div class="stat-sub">Cash payments</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon cyan">🛣️</div>
+        <div class="stat-info">
+          <div class="stat-label">Total KM Driven</div>
+          <div class="stat-value" id="stat-totalKm">0 km</div>
+          <div class="stat-sub">This month</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon purple">📅</div>
+        <div class="stat-info">
+          <div class="stat-label">Working Days</div>
+          <div class="stat-value" id="stat-workDays">0 days</div>
+          <div class="stat-sub">Active trips</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon red">🚫</div>
+        <div class="stat-info">
+          <div class="stat-label">Absent Days</div>
+          <div class="stat-value" id="stat-absentDays">0 days</div>
+          <div class="stat-sub">This month</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Entries -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">🕐 Recent 5 Entries</span>
+        <button class="btn btn-outline btn-sm" onclick="switchView('table')">View All →</button>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th><th>Driver</th><th>KM</th><th>Fuel</th>
+              <th>Total Fare</th><th>Net Profit</th><th>Sync</th>
+            </tr>
+          </thead>
+          <tbody id="recentTbody">
+            <tr><td colspan="7"><div class="empty-state"><div class="empty-icon">📋</div><p>No records yet</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /dashboard -->
+
+
+  <!-- ══════════════════════════════════════════════════
+       VIEW: RECORDS TABLE
+  ══════════════════════════════════════════════════ -->
+  <div id="view-table" class="view">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">📋 Daily Records</span>
+        <div class="filter-bar">
+          <select id="filterMonth"  onchange="onFilterMonthChange(this.value)"></select>
+          <select id="filterDriver" onchange="onFilterDriverChange(this.value)"><option value="">All Drivers</option></select>
+          <button class="btn btn-primary" onclick="openAddModal()">➕ Add Entry</button>
+          <button class="btn btn-success" onclick="exportCSV()">⬇️ CSV</button>
+          <button class="btn btn-outline" onclick="printReport()">🖨️ Print</button>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead id="mainThead"></thead>
+          <tbody id="mainTbody"></tbody>
+          <tfoot id="mainTfoot"></tfoot>
+        </table>
+      </div>
+    </div>
+  <!-- Driver Cash Summary (auto-renders below table) -->
+  <div id="driverCashSummaryContainer"></div>
+
+  </div><!-- /table -->
+
+
+  <!-- ══════════════════════════════════════════════════
+       VIEW: MONTHLY SUMMARY
+  ══════════════════════════════════════════════════ -->
+  <div id="view-summary" class="view">
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-header">
+        <span class="card-title">📈 Monthly Summary & Money Flow</span>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <div class="month-selector">
+            <label style="text-transform:none;font-size:13px;color:var(--gray-600)">Month:</label>
+            <select id="summaryMonth" onchange="onFilterMonthChange(this.value)"></select>
+          </div>
+          <select id="summaryDriver" class="driver-select" style="width:auto;min-width:160px" onchange="onFilterDriverChange(this.value)">
+            <option value="">All Drivers</option>
+          </select>
+          <button class="btn btn-success" onclick="exportCSV()">⬇️ Export CSV</button>
+          <button class="btn btn-outline" onclick="printReport()">🖨️ Print</button>
+        </div>
+      </div>
+    </div>
+    <div id="summaryContainer"></div>
+  </div><!-- /summary -->
+
+
+  <!-- ══════════════════════════════════════════════════
+       VIEW: ADMIN PANEL
+  ══════════════════════════════════════════════════ -->
+  <div id="view-admin" class="view">
+
+    <!-- Google Sheets Sync Setup -->
+    <div class="card" style="margin-bottom:24px;border:2px solid #16a34a">
+      <div class="card-header" style="background:linear-gradient(135deg,#166534,#16a34a);color:white">
+        <span class="card-title" style="color:white">☁️ Google Sheets Auto-Sync</span>
+        <span style="font-size:12px;color:rgba(255,255,255,0.8)">Every record auto-saves to your Google Sheet</span>
+      </div>
+      <div class="card-body">
+        <div style="background:var(--primary-light);border-radius:8px;padding:14px;margin-bottom:16px;font-size:13px;line-height:1.7;border-left:4px solid var(--primary)">
+          <strong>📋 Setup Steps:</strong><br>
+          1. Open <a href="https://docs.google.com/spreadsheets" target="_blank" style="color:var(--primary)">Google Sheets</a> → New Sheet → Name it "Car Records"<br>
+          2. Go to <strong>Extensions → Apps Script</strong><br>
+          3. Paste the code from <strong>google-apps-script.js</strong> file (in this folder)<br>
+          4. Click <strong>Deploy → New Deployment → Web App</strong><br>
+          5. Set <strong>"Who has access" → Anyone</strong> → Deploy → Copy the URL<br>
+          6. Paste the Web App URL below and click Save
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+          <div class="form-group" style="flex:1;min-width:300px">
+            <label for="sheetsWebhookUrl">🔗 Google Apps Script Web App URL</label>
+            <input type="url" id="sheetsWebhookUrl" placeholder="https://script.google.com/macros/s/.../exec" />
+          </div>
+          <button class="btn btn-success" onclick="saveSheetsUrl()">💾 Save URL</button>
+          <button class="btn btn-primary" onclick="syncAllUnsyncedRecords()">☁️ Sync All Unsynced</button>
+        </div>
+        <p style="margin-top:10px;font-size:12px;color:var(--gray-500)">
+          ✅ Once URL is saved, every new entry automatically syncs to Google Sheets.
+          The ☁️ icon in the table shows sync status per record.
+        </p>
+      </div>
+    </div>
+
+    <!-- Driver Management -->
+    <div class="card" style="margin-bottom:24px">
+      <div class="card-header">
+        <span class="card-title">👤 Driver Management</span>
+      </div>
+      <div class="card-body">
+        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+          <input id="newDriverInput" type="text" placeholder="Enter driver name..."
+                 style="max-width:300px" onkeydown="if(event.key==='Enter') addDriver()" />
+          <button class="btn btn-primary" onclick="addDriver()">➕ Add Driver</button>
+        </div>
+        <div id="driverList" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+    </div>
+
+    <!-- Column Manager -->
+    <div class="card" style="margin-bottom:24px">
+      <div class="card-header">
+        <span class="card-title">🗂️ Column Manager</span>
+        <small style="color:var(--gray-500)">Toggle columns in the Records table</small>
+      </div>
+      <div class="card-body">
+        <div id="colManager" class="col-manager"></div>
+        <div style="margin-top:12px">
+          <button class="btn btn-outline btn-sm" onclick="switchView('table')">→ Preview Table</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Management -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">🗄️ Data Management</span>
+      </div>
+      <div class="card-body">
+        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+          <button class="btn btn-success" onclick="exportCSV()">⬇️ Export All Data (CSV)</button>
+          <button class="btn btn-outline" onclick="printReport()">🖨️ Print Report</button>
+          <button class="btn btn-danger"  onclick="resetAllData()">🗑️ Reset All Data</button>
+        </div>
+        <p style="margin-top:12px;color:var(--gray-500);font-size:12px">
+          ⚠️ Data is stored in your browser's localStorage. Export CSV regularly to keep a backup.
+        </p>
+      </div>
+    </div>
+
+  </div><!-- /admin -->
+
+</main>
+
+
+<!-- ═══════════════════════════════════════════════════ ENTRY MODAL ═══ -->
+<div id="entryModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">➕ Add New Entry</h2>
+      <button class="modal-close" onclick="closeModal('entryModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+
+        <!-- Date & Driver -->
+        <div class="form-group">
+          <label for="fDate">📅 Date *</label>
+          <input type="date" id="fDate" required />
+        </div>
+        <div class="form-group">
+          <label for="fDriverName">👤 Driver Name</label>
+          <select id="fDriverName" class="driver-select">
+            <option value="">-- Select Driver --</option>
+          </select>
+        </div>
+
+        <!-- KM -->
+        <div class="form-group">
+          <label for="fStartKm">🚗 Start Reading (km)</label>
+          <input type="number" id="fStartKm" placeholder="e.g. 14935" min="0" />
+        </div>
+        <div class="form-group">
+          <label for="fEndKm">🏁 End Reading (km)</label>
+          <input type="number" id="fEndKm" placeholder="e.g. 15072" min="0" />
+        </div>
+
+        <!-- Fuel -->
+        <div class="form-group">
+          <label for="fFuelType">⛽ Fuel Type</label>
+          <select id="fFuelType">
+            <option value="">-- Select --</option>
+            <option value="CNG">CNG</option>
+            <option value="Petrol">Petrol</option>
+            <option value="CNG+Petrol">CNG + Petrol</option>
+            <option value="HALF DAY">Half Day</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="fFuelUpi">⛽ Fuel Cost (UPI) ₹</label>
+          <input type="number" id="fFuelUpi" placeholder="0" min="0" />
+        </div>
+        <div class="form-group">
+          <label for="fFuelCash">⛽ Fuel Cost (Cash) ₹</label>
+          <input type="number" id="fFuelCash" placeholder="0" min="0" />
+        </div>
+
+        <!-- Food & Servicing (NEW) -->
+        <div class="form-group">
+          <label for="fFoodExp">🍔 Food Expense ₹</label>
+          <input type="number" id="fFoodExp" placeholder="0" min="0" />
+        </div>
+        <div class="form-group">
+          <label for="fServicing">🔧 Servicing ₹</label>
+          <input type="number" id="fServicing" placeholder="0" min="0" />
+        </div>
+
+        <!-- Commission -->
+        <div class="form-group">
+          <label for="fCommission">🤝 Commission ₹</label>
+          <input type="number" id="fCommission" placeholder="0" min="0" />
+        </div>
+
+        <!-- Earnings -->
+        <div class="form-group">
+          <label for="fUpiAmount">📱 UPI Earned ₹</label>
+          <input type="number" id="fUpiAmount" placeholder="0" min="0" />
+        </div>
+        <div class="form-group">
+          <label for="fCashAmount">💵 Cash Earned ₹</label>
+          <input type="number" id="fCashAmount" placeholder="0" min="0" />
+        </div>
+
+        <!-- Cash by driver -->
+        <div class="form-group">
+          <label for="fCashPayDriver">💸 Cash Paid By Driver ₹</label>
+          <input type="number" id="fCashPayDriver" placeholder="0" min="0" />
+        </div>
+
+        <!-- Extra expenses -->
+        <div class="form-group">
+          <label for="fExtraExpCash">🧾 Extra Expense (Cash) ₹</label>
+          <input type="number" id="fExtraExpCash" placeholder="e.g. Toll" min="0" />
+        </div>
+        <div class="form-group">
+          <label for="fExtraExpUpi">🧾 Extra Expense (UPI) ₹</label>
+          <input type="number" id="fExtraExpUpi" placeholder="0" min="0" />
+        </div>
+
+        <!-- Cash into UPI -->
+        <div class="form-group">
+          <label for="fCashIntoUpi">🔄 Cash→UPI by Driver ₹</label>
+          <input type="number" id="fCashIntoUpi" placeholder="0" min="0" />
+        </div>
+
+        <!-- Notes -->
+        <div class="form-group full-width">
+          <label for="fNotes">📝 Notes</label>
+          <textarea id="fNotes" placeholder="e.g. ABSENT, Half Day, Toll ₹280, Rapido commission, Advance payment, Barati..."></textarea>
+        </div>
+
+      </div><!-- /form-grid -->
+
+      <!-- Live Preview -->
+      <div style="margin-top:20px;padding:16px;background:var(--gray-50);border-radius:var(--radius-sm);border:1px solid var(--gray-200)">
+        <div style="font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;margin-bottom:10px">
+          📊 Live Calculation Preview
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:20px">
+          <div>
+            <span style="font-size:12px;color:var(--gray-500)">Total Km</span>
+            <div style="font-weight:700;color:var(--gray-800)" id="prevTotalKm">—</div>
+          </div>
+          <div>
+            <span style="font-size:12px;color:var(--gray-500)">Total Fare</span>
+            <div style="font-weight:700;color:var(--success)" id="prevTotalFare">₹0</div>
+          </div>
+          <div>
+            <span style="font-size:12px;color:var(--gray-500)">Total Expenses</span>
+            <div style="font-weight:700;color:var(--danger)" id="prevTotalFuel">₹0</div>
+          </div>
+          <div>
+            <span style="font-size:12px;color:var(--gray-500)">🍔 Food</span>
+            <div style="font-weight:700;color:var(--warning)" id="prevFood">₹0</div>
+          </div>
+          <div>
+            <span style="font-size:12px;color:var(--gray-500)">🔧 Servicing</span>
+            <div style="font-weight:700;color:#7c3aed" id="prevServicing">₹0</div>
+          </div>
+          <div>
+            <span style="font-size:12px;color:var(--gray-500)">Owner Net Profit</span>
+            <div style="font-weight:700;font-size:20px" id="prevNetProfit">₹0</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /modal-body -->
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('entryModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEntry()">💾 Save Entry</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════ TOAST ═══ -->
+<div id="toastContainer" class="toast-container"></div>
+
+
+<!-- ═══════════════════════════════════════════════════ SCRIPTS ═══ -->
+<script src="app.js"></script>
+<script>
+  function updatePreview() {
+    const get = id => parseFloat(document.getElementById(id)?.value) || 0;
+    const startKm = get('fStartKm'), endKm = get('fEndKm');
+    const totalKm   = endKm > startKm ? endKm - startKm : 0;
+    const totalFare = get('fUpiAmount') + get('fCashAmount');
+    const food      = get('fFoodExp');
+    const serv      = get('fServicing');
+    const totalExp  = get('fFuelUpi') + get('fFuelCash') + food + serv +
+                      get('fCommission') + get('fExtraExpCash') + get('fExtraExpUpi');
+    const netProfit = totalFare - totalExp;
+
+    document.getElementById('prevTotalKm').textContent  = totalKm > 0 ? totalKm + ' km' : '—';
+    document.getElementById('prevTotalFare').textContent = fmt(totalFare);
+    document.getElementById('prevTotalFuel').textContent = fmt(totalExp);
+    document.getElementById('prevFood').textContent      = fmt(food);
+    document.getElementById('prevServicing').textContent = fmt(serv);
+    const profEl = document.getElementById('prevNetProfit');
+    profEl.textContent = fmt(netProfit);
+    profEl.style.color = netProfit >= 0 ? 'var(--success)' : 'var(--danger)';
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    ['fStartKm','fEndKm','fFuelUpi','fFuelCash','fFoodExp','fServicing',
+     'fCommission','fUpiAmount','fCashAmount','fExtraExpCash','fExtraExpUpi']
+      .forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', updatePreview);
+      });
+  });
+</script>
+
+</body>
+</html>
